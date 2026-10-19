@@ -1,0 +1,10 @@
+project_id = "ai-english-teacher"
+
+[functions.create-live-token]
+verify_jwt = false
+
+[functions.finalize-session]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

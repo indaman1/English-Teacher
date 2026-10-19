@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": [], "noUnusedLocals": true },
+  "include": ["supabase/functions/**/*.ts"],
+  "exclude": ["supabase/functions/**/*.test.ts"]
+}
