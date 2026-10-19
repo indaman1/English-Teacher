@@ -1,6 +1,14 @@
 // Supabase Edge Function: create-live-token
 // Issues a SHORT-LIVED Gemini Live ephemeral token to an authenticated user.
 // The permanent GEMINI_API_KEY exists only here, as a server-side secret.
+// Provide a minimal Deno declaration for TypeScript environments that don't
+// include Deno's types, to avoid "Cannot find name 'Deno'" errors.
+declare const Deno: {
+  serve(arg0: (req: any) => Promise<Response>): unknown;
+  env: {
+    get(key: string): string | undefined;
+  };
+};
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { handleCreateLiveToken, type Deps, type UsageSummary } from './handler.ts';
