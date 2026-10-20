@@ -94,7 +94,7 @@ const deps: Deps = {
 
   async mintToken({ expireTime, newSessionExpireTime, model }) {
     if (!geminiKey) throw new Error('GEMINI_API_KEY is not configured');
-    const ai = new GoogleGenAI({ apiKey: geminiKey, httpOptions: { apiVersion: 'v1beta' } });
+    const ai = new GoogleGenAI({ apiKey: geminiKey, httpOptions: { apiVersion: 'v1alpha' } });
     const token = await ai.authTokens.create({
       config: {
         uses: 1,

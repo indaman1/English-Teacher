@@ -45,7 +45,7 @@ export class GeminiLiveService {
     if (this.session) throw new VoiceError('unknown', 'A live session is already open.'); // no duplicate sessions
     this.closedByUser = false;
 
-    const ai = new GoogleGenAI({ apiKey: options.token, httpOptions: { apiVersion: 'v1beta' } });
+    const ai = new GoogleGenAI({ apiKey: options.token, httpOptions: { apiVersion: 'v1alpha' } });
 
     try {
       this.session = await ai.live.connect({
@@ -65,9 +65,15 @@ export class GeminiLiveService {
           },
           onmessage: (message: LiveServerMessage) => this.handleMessage(message, events),
           onerror: (e: ErrorEvent) => {
+            console.warn('[live] socket error:', e?.message);
+            console.warn('[live] socket error:', e?.message);
+            console.warn('[live] socket error:', e?.message);
             events.onError(fromLiveClose(e?.message));
           },
           onclose: (e: CloseEvent) => {
+            if (!this.closedByUser) console.warn('[live] closed:', e?.code, e?.reason);
+            if (!this.closedByUser) console.warn('[live] closed:', e?.code, e?.reason);
+            if (!this.closedByUser) console.warn('[live] closed:', e?.code, e?.reason);
             const userInitiated = this.closedByUser;
             this.open = false;
             this.session = null;

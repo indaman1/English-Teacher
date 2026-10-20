@@ -130,7 +130,7 @@ function LiveScreen({
         )}
 
         <div className="mt-6 flex flex-col items-center">
-          <TeacherAvatar state={live.state} />
+          <TeacherAvatar state={live.state} muted={live.muted} getMicLevel={live.getMicLevel} getAiLevel={live.getAiLevel} />
           <div className="mt-5" role="status" aria-live="polite">
             <Badge tone={statusTone} className="gap-1.5 px-3 py-1 text-sm">
               {(live.state === 'connecting' || live.state === 'requesting_mic' || live.state === 'reconnecting' || live.state === 'ending') && (

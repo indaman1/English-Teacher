@@ -1,7 +1,17 @@
 export function corsHeaders(allowedOrigin: string | undefined, requestOrigin: string | null): Record<string, string> {
-  // If ALLOWED_ORIGIN is set (production) only that origin is echoed. Otherwise fall back to the
-  // caller's origin so local development works. Auth is by bearer token, never cookies.
-  const origin = allowedOrigin ? allowedOrigin : requestOrigin ?? '*';
+  // ALLOWED_ORIGIN may hold one origin or several, comma-separated
+  // (e.g. "https://app.vercel.app,http://localhost:5173"). Only an origin from that list is echoed back.
+  // If it is unset (local development) the caller's origin is echoed. Auth is by bearer token, never cookies.
+  let origin: string;
+  if (allowedOrigin) {
+    const list = allowedOrigin
+      .split(',')
+      .map((o) => o.trim().replace(/\/+$/, ''))
+      .filter(Boolean);
+    origin = requestOrigin && list.includes(requestOrigin) ? requestOrigin : list[0] ?? '';
+  } else {
+    origin = requestOrigin ?? '*';
+  }
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
