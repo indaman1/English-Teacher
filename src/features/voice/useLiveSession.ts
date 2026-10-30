@@ -8,7 +8,7 @@ import { VoiceError } from './errors';
 import { TranscriptBuffer, type TranscriptMessage } from './transcriptBuffer';
 import { canStart, isActive, voiceReducer, type VoiceEvent, type VoiceState } from './voiceStateMachine';
 
-const KICKOFF_TEXT = 'Please begin the lesson now with a short, friendly greeting and your first question.';
+const KICKOFF_TEXT = 'Please begin now: greet me warmly in one or two short sentences and ask how I am doing. Then wait for my answer.';
 const PROCESSING_DELAY_MS = 900;
 const INTERRUPT_SETTLE_MS = 600;
 const MAX_AUTO_RECONNECTS = 2;
