@@ -106,8 +106,62 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['tabl
   await ctx.close();
 }
 
+
+// ---- installable app (PWA) ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+  await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+
+  const mres = await page.request.get(BASE + '/manifest.webmanifest');
+  const manifest = await mres.json().catch(() => null);
+  check('[pwa] manifest is served as JSON', mres.ok() && !!manifest && manifest.display === 'standalone', mres.headers()['content-type']);
+  for (const icon of manifest?.icons ?? []) {
+    const r = await page.request.get(BASE + icon.src);
+    check(`[pwa] icon ${icon.src} loads`, r.ok() && /image\/png/.test(r.headers()['content-type'] ?? ''));
+  }
+  const swRes = await page.request.get(BASE + '/sw.js');
+  const swText = await swRes.text();
+  check('[pwa] service worker file is served with a build id stamped in', swRes.ok() && !swText.includes('__BUILD_ID__'));
+
+  const scope = await page.evaluate(async () => {
+    const reg = await navigator.serviceWorker.ready;
+    return reg.scope;
+  });
+  check('[pwa] service worker registers and activates', scope === BASE + '/', scope);
+
+  const cdp = await ctx.newCDPSession(page);
+  const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors');
+  check('[pwa] Chrome reports no installability errors', installabilityErrors.length === 0, JSON.stringify(installabilityErrors.map((e) => e.errorId)));
+
+  // API calls must never be answered from the service worker cache.
+  const swCaches = await page.evaluate(async () => {
+    const out = [];
+    for (const name of await caches.keys()) for (const req of await (await caches.open(name)).keys()) out.push(new URL(req.url).origin + new URL(req.url).pathname);
+    return out;
+  });
+  check('[pwa] cache holds only same-origin app files', swCaches.length > 0 && swCaches.every((u) => u.startsWith(BASE)), `${swCaches.length} entries`);
+
+  // Truly offline: Playwright's setOffline does not stop a service worker's own fetches, so stop the server too.
+  await page.reload({ waitUntil: 'networkidle' }); // make sure the page is controlled by the service worker
+  await server.close();
+  await ctx.setOffline(true);
+  await page.goto(BASE + '/dashboard').catch(() => undefined);
+  await page.waitForTimeout(800);
+  const offlineText = await page.locator('body').innerText().catch(() => '');
+  check('[pwa] offline: the saved app opens (not the browser error page)', /Supabase is not configured|English Teacher|Sign in|Welcome/i.test(offlineText), offlineText.slice(0, 50).replace(/\n/g, ' '));
+  check('[pwa] offline: the "You are offline" strip is shown', /You are offline/i.test(offlineText) && /Voice lessons need an internet connection/i.test(offlineText));
+  const offlineRoutes = [];
+  for (const route of ['/lessons', '/progress', '/settings', '/privacy']) {
+    await page.goto(BASE + route).catch(() => undefined);
+    await page.waitForTimeout(300);
+    offlineRoutes.push(!/ERR_INTERNET|This site can.t be reached/i.test(await page.locator('body').innerText().catch(() => '')));
+  }
+  check('[pwa] offline: deep links /lessons /progress /settings /privacy open the app', offlineRoutes.every(Boolean), offlineRoutes.join(','));
+  await ctx.close();
+}
+
 await browser.close();
-await server.close();
 console.log(`Screenshots saved to ${OUT}`);
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} browser checks passed`);

@@ -9,3 +9,5 @@ supabase/.branches
 .DS_Store
 coverage
 .e2e-dist
+.vercel
+.env*

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/layout/ProtectedRoute';
+import { OfflineBanner } from '@/components/pwa/OfflineBanner';
 import { LoadingState } from '@/components/ui/States';
 
 // Route-level code splitting keeps the first load small; the heavy voice/Gemini code only loads on /practice/live.
@@ -30,6 +31,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 export function App() {
   return (
     <Suspense fallback={<LoadingState />}>
+      <OfflineBanner />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/privacy" element={<Privacy />} />

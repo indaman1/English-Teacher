@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { isSupabaseConfigured } from '@/lib/env';
 import { ensureProfile, fetchProfile, updateProfile, type ProfileUpdate } from '@/services/supabase/profile';
 import { amIAdmin } from '@/services/supabase/admin';
+import { clearUserSnapshots, isNetworkFailure, noteSavedDataUsed, readSnapshot, setOfflineUser, writeSnapshot } from '@/pwa/offlineCache';
 import type { Profile } from '@/types';
 
 interface AuthContextValue {
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
   const loadProfile = useCallback(async (user: User | null) => {
+    setOfflineUser(user?.id ?? null);
     if (!user) {
       setProfile(null);
       setIsAdmin(false);
@@ -35,11 +37,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const name = (user.user_metadata?.display_name as string | undefined) ?? '';
-      const [p, admin] = await Promise.all([ensureProfile(user.id, user.email, name), amIAdmin(user.id)]);
+      const [p, admin] = await Promise.all([ensureProfile(user.id, user.email, name), amIAdmin(user.id).catch(() => false)]);
+      writeSnapshot('user', 'profile', p);
       setProfile(p);
       setIsAdmin(admin);
-    } catch {
-      setProfile(null);
+    } catch (err) {
+      // Offline: use the copy saved on this device so the app still opens. Anything else is a real failure.
+      const saved = isNetworkFailure(err) ? readSnapshot<Profile>('user', 'profile') : null;
+      if (saved) {
+        noteSavedDataUsed(saved.savedAt);
+        setProfile(saved.data);
+      } else {
+        setProfile(null);
+      }
     }
   }, []);
 
@@ -57,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       if (event === 'SIGNED_OUT') {
+        clearUserSnapshots();
+        setOfflineUser(null);
         setProfile(null);
         setIsAdmin(false);
         return;
@@ -73,6 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    clearUserSnapshots();
+    setOfflineUser(null);
     setProfile(null);
     setIsAdmin(false);
   }, []);

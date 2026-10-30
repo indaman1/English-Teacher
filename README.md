@@ -127,6 +127,17 @@ npm run dev      # http://localhost:5173
 
 Microphone access needs a secure context: `localhost` and `https://` both work; plain `http://` on a LAN IP does not.
 
+## Install on a phone (PWA)
+
+The app is an installable web app. After you deploy to HTTPS (Vercel), students can put it on their home screen:
+
+- **Android (Chrome):** an **Install app** card appears on the dashboard and in Settings; or use the browser menu → *Install app*.
+- **iPhone/iPad (Safari):** tap **Share** → **Add to Home Screen** (the same card shows these steps).
+
+How it works: `public/manifest.webmanifest` (name, icons, standalone display), `public/sw.js` (service worker), `public/offline.html`, and `src/pwa/`. The service worker only handles same-origin app files: built JS/CSS are cached after the first visit the app shell is saved too, so the dashboard, lessons and progress open offline (per-user snapshots in local storage, erased on sign-out), with an "You are offline" strip. It **never** caches or intercepts Supabase, Gemini or sign-in requests. Voice lessons still need the internet. A new deploy shows an **Update** bar; the new version never activates mid-lesson. The service worker is registered in production builds only. Regenerate the icons with `npm run icons` (pure Python, no extra tools needed).
+
+Not verified: installing on a real Android phone or iPhone (Chrome's own installability check passes in the automated test). Test on both before announcing it.
+
 ## Scripts
 
 | Command | What it does |
@@ -137,6 +148,7 @@ Microphone access needs a secure context: `localhost` and `https://` both work; 
 | `npm run test` / `test:watch` | Vitest |
 | `npm run test:e2e` | Playwright browser smoke test (builds against a dummy Supabase URL; no credentials needed) |
 | `npm run lint` | ESLint |
+| `npm run icons` | regenerate the PWA icons (needs python3) |
 | `npm run typecheck` | `tsc --noEmit` |
 
 ## Production deployment (Vercel)

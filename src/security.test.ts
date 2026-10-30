@@ -37,9 +37,28 @@ describe('secrets never reach the browser', () => {
     }
   });
 
+  // Only these two files may write to browser storage: the install-banner flag and the per-user offline copies.
+  const STORAGE_ALLOWED = ['src/pwa/pwa.ts', 'src/pwa/offlineCache.ts'];
+
   it('never stores tokens or keys in localStorage/sessionStorage', () => {
     for (const f of frontendFiles.filter((x) => /\.(ts|tsx)$/.test(x))) {
+      const rel = f.slice(root.length + 1);
+      if (STORAGE_ALLOWED.includes(rel)) continue;
       expect(read(f), f).not.toMatch(/(localStorage|sessionStorage)\.(setItem)/);
+      expect(read(f), f).not.toMatch(/\b(localStorage|sessionStorage)\b[^;\n]*\b(token|apikey|api_key|secret|password)\b/i);
+    }
+  });
+
+  it('the two files allowed to use storage only write namespaced, non-secret data', () => {
+    for (const rel of STORAGE_ALLOWED) {
+      const text = read(join(root, rel)).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''); // code only, not comments
+      expect(text, rel).not.toMatch(/access_token|refresh_token|password|api[_-]?key|service_role|secret/i);
+      expect(text, rel).not.toMatch(/sessionStorage/);
+      for (const m of text.matchAll(/(?:setItem|getItem|removeItem)\(\s*([^,)\n]+)/g)) {
+        // keys must come from constants/variables built from our own namespaces, never from user-supplied strings
+        expect(m[1].trim(), `${rel}: ${m[0]}`).toMatch(/^(k|DISMISS_KEY)$/);
+      }
+      expect(text, rel).toMatch(/english-teacher:/);
     }
   });
 

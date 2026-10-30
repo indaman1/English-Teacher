@@ -32,11 +32,19 @@ describe('buildTeacherInstruction', () => {
     expect(p).toMatch(/Never shame/);
   });
 
-  it('keeps English as the default and only uses Hausa briefly', () => {
-    const p = buildTeacherInstruction({ ...base, explanationLanguage: 'hausa' });
-    expect(p).toMatch(/Speak English by default/);
-    expect(p).toMatch(/Do not turn the lesson into Hausa/);
-    expect(buildTeacherInstruction({ ...base, explanationLanguage: 'english' })).toMatch(/asks you to explain something in Hausa/);
+  it('keeps English as the default and never changes language unless the student asks', () => {
+    for (const explanationLanguage of ['english', 'hausa'] as const) {
+      const p = buildTeacherInstruction({ ...base, explanationLanguage });
+      expect(p).toMatch(/Speak English by default/);
+      expect(p.startsWith('LANGUAGE LOCK')).toBe(true);
+      expect(p.trimEnd().endsWith('English words, sentences and corrections in English so the student can practise them.')).toBe(true);
+      expect(p).not.toMatch(/gently encourage them to try in English/);
+      expect(p).toMatch(/Never change it on your own/);
+      expect(p).toMatch(/ONLY when the student clearly and explicitly asks/);
+      expect(p).toMatch(/stay in that language until the student asks you to change again/);
+    }
+    expect(buildTeacherInstruction({ ...base, explanationLanguage: 'hausa' })).toMatch(/only switch if they say yes/);
+    expect(buildTeacherInstruction({ ...base, explanationLanguage: 'english' })).not.toMatch(/Hausa support in their profile/);
   });
 
   it('never claims it can measure pronunciation', () => {

@@ -1,14 +1,17 @@
 import { supabase } from '@/lib/supabase';
+import { clearUserSnapshots } from '@/pwa/offlineCache';
 
 export async function deleteMyLearningData(): Promise<void> {
   const { error } = await supabase.rpc('delete_my_learning_data');
   if (error) throw new Error(error.message);
+  clearUserSnapshots();
 }
 
 /** Permanently deletes the account via a server-side function (needs the service role). */
 export async function deleteMyAccount(): Promise<void> {
   const { error } = await supabase.functions.invoke('delete-account', { body: { confirm: 'DELETE_MY_ACCOUNT' } });
   if (error) throw new Error('We could not delete your account. Please try again.');
+  clearUserSnapshots();
   await supabase.auth.signOut();
 }
 

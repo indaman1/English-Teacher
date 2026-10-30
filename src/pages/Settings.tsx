@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { InstallAppCard } from '@/components/pwa/InstallAppCard';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { ConfirmDialog, Modal } from '@/components/ui/Modal';
@@ -148,6 +149,8 @@ export default function Settings() {
           </CardBody>
         </Card>
       </form>
+
+      <InstallAppCard always />
 
       <Card>
         <CardHeader title="Contact support" description="Report a problem or incorrect content." />

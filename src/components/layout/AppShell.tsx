@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { BookOpen, BookText, ChevronDown, CreditCard, History, LayoutDashboard, LineChart, LogOut, Mic, Settings, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { UpdateBar } from '@/components/pwa/UpdateBar';
 import { cn } from '@/lib/utils';
 
 const mainNav = [
@@ -130,6 +131,7 @@ export function AppShell() {
       <main id="main" className="page-container py-6 sm:py-8">
         <Outlet />
       </main>
+      <UpdateBar />
 
       <nav
         aria-label="Main"

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { BookText, Clock, Flame, GraduationCap, Mic, Sparkles } from 'lucide-react';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
 import { ProgressCard, StatCard } from '@/components/dashboard/StatCard';
+import { InstallAppCard } from '@/components/pwa/InstallAppCard';
 import { ConversationCard } from '@/components/lessons/ConversationCard';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
@@ -65,6 +66,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <InstallAppCard />
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">

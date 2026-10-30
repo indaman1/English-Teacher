@@ -1,16 +1,21 @@
 import { supabase } from '@/lib/supabase';
+import { withOfflineCache } from '@/pwa/offlineCache';
 import type { VocabStatus, VocabularyItem } from '@/types';
 
-export async function listVocabulary(): Promise<VocabularyItem[]> {
-  const { data, error } = await supabase.from('vocabulary_items').select('*').order('created_at', { ascending: false }).limit(1000);
-  if (error) throw new Error(error.message);
-  return (data ?? []) as VocabularyItem[];
+export function listVocabulary(): Promise<VocabularyItem[]> {
+  return withOfflineCache('user', 'vocab', async () => {
+    const { data, error } = await supabase.from('vocabulary_items').select('*').order('created_at', { ascending: false }).limit(1000);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as VocabularyItem[];
+  });
 }
 
-export async function countVocabulary(): Promise<number> {
-  const { count, error } = await supabase.from('vocabulary_items').select('id', { count: 'exact', head: true });
-  if (error) throw new Error(error.message);
-  return count ?? 0;
+export function countVocabulary(): Promise<number> {
+  return withOfflineCache('user', 'vocab-count', async () => {
+    const { count, error } = await supabase.from('vocabulary_items').select('id', { count: 'exact', head: true });
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  });
 }
 
 export interface NewWord {

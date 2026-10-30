@@ -6,6 +6,7 @@ import { Select } from '@/components/ui/Input';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/States';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { cn } from '@/lib/utils';
 import { getMyUsage } from '@/services/supabase/usage';
@@ -34,10 +35,11 @@ export default function Practice() {
   const lessonId = params.get('lesson');
 
   const { data, error, loading, reload } = useAsync(async () => {
-    const [modes, usage, lesson] = await Promise.all([listModes(), getMyUsage(), lessonId ? getLesson(lessonId) : Promise.resolve(null)]);
+    const [modes, usage, lesson] = await Promise.all([listModes(), getMyUsage().catch(() => null), lessonId ? getLesson(lessonId) : Promise.resolve(null)]);
     return { modes, usage, lesson };
   }, [lessonId]);
 
+  const online = useOnlineStatus();
   const [modeCode, setModeCode] = useState<string | null>(params.get('mode'));
   const [topic, setTopic] = useState('');
   const [level, setLevel] = useState<EnglishLevel | ''>('');
@@ -138,9 +140,14 @@ export default function Practice() {
               About {Math.max(0, Math.floor(Math.min(remainingSeconds, usage.max_session_seconds) / 60))} minutes available for this lesson on your {usage.plan_code} plan.
             </p>
           )}
-          <Button size="lg" fullWidth onClick={begin} disabled={limitReached}>
+          <Button size="lg" fullWidth onClick={begin} disabled={limitReached || !online}>
             <Mic className="h-5 w-5" aria-hidden /> Continue to live lesson
           </Button>
+          {!online && (
+            <p role="alert" className="text-sm text-amber-800">
+              Voice lessons need an internet connection. Reconnect to start your lesson.
+            </p>
+          )}
         </section>
       )}
     </div>

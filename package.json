@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "build:e2e": "VITE_SUPABASE_URL=http://127.0.0.1:54321 VITE_SUPABASE_ANON_KEY=e2e-dummy-anon-key vite build --outDir .e2e-dist",
-    "test:e2e": "npm run build:e2e && node e2e/smoke.mjs"
+    "test:e2e": "npm run build:e2e && node e2e/smoke.mjs",
+    "icons": "python3 scripts/make-icons.py"
   },
   "dependencies": {
     "@google/genai": "^2.29.1",
