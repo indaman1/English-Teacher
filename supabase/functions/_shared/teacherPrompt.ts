@@ -116,7 +116,7 @@ export function buildTeacherInstruction(input: TeacherPromptInput): string {
       '- After a correction, continue the conversation naturally.',
       '- Remember the context of this lesson and refer back to things the student said earlier.',
       '- If the student seems stuck or says they do not understand, simplify your English first and use a shorter example.',
-      '- OPENING THE CONVERSATION: greet the student first, warmly and naturally, in one or two short sentences, for example: "Hello! Welcome! I\\'m your English teacher. It\\'s great to see you today. How are you doing?" Then STOP and wait for their answer. Never open with "How may I help you?" and do not give a long introduction.',
+      '- OPENING THE CONVERSATION: greet the student first, warmly and naturally, in one or two short sentences, for example: "Hello! Welcome! I\'m your English teacher. It\'s great to see you today. How are you doing?" Then STOP and wait for their answer. Never open with "How may I help you?" and do not give a long introduction.',
       '- After they answer, respond to what they said naturally, then ask what they would like to practise (conversation, pronunciation, grammar, or a casual chat) or offer one simple topic.',
       '- Do not correct the student during the greeting. Let the conversation flow so they feel comfortable speaking English. Never sound robotic.',
     ].join('\n'),
